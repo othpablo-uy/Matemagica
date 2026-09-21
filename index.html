@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matemágica</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7a1f2b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Matemágica">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+<main class="menu">
+  <h1>Matemágica</h1>
+  <p class="sub">3 trucos de magia matemática para sorprender a todos.</p>
+
+  <div class="trick-list">
+    <a class="trick" href="trucos/binario.html">
+      <span class="emoji">&#127183;</span>
+      <div>
+        <div class="t-name">Tarjetas binarias</div>
+        <div class="t-desc">Adiviná el número que la otra persona piense, con 6 tarjetas.</div>
+      </div>
+    </a>
+
+    <a class="trick" href="trucos/kaprekar.html">
+      <span class="emoji">&#128300;</span>
+      <div>
+        <div class="t-name">Constante de Kaprekar</div>
+        <div class="t-desc">Calculadora que "sabe" en cuántos pasos todo número llega al 6174.</div>
+      </div>
+    </a>
+
+    <a class="trick" href="trucos/calculadora.html">
+      <span class="emoji">&#129535;</span>
+      <div>
+        <div class="t-name">Calculadora mágica</div>
+        <div class="t-desc">Una calculadora que parece adivinar la fecha y la hora por vos.</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="premium-card">
+    <div class="p-txt">
+      <b>Matemágica PRO</b><br>
+      Quitá los anuncios y apoyá este pack.
+    </div>
+    <button class="ad-buy" onclick="Ads.showUpsell(); return false;">PRO</button>
+  </div>
+
+  <p class="foot">Demo web gratuita &middot; Disponible pronto en Play Store</p>
+</main>
+
+<script src="js/ads.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Calculadora mágica</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #e8eaed;
+      font-family: Roboto, "Segoe UI", Arial, sans-serif;
+    }
+
+    /* marco del teléfono: gris oscuro para resaltar la pantalla clara */
+    .phone {
+      width: calc(390px + 6mm);
+      background: #202124;
+      border-radius: 36px;
+      padding: 14px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.5);
+    }
+
+    .screen {
+      display: flex;
+      flex-direction: column;
+      height: 790px;
+      min-height: 640px;
+      border-radius: 28px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .status-bar {
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      padding: 8px 14px;
+      color: #202124;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    /* punch-hole cámara frontal estilo Xiaomi */
+    .notch {
+      width: 14px;
+      height: 14px;
+      background: #202124;
+      border-radius: 50%;
+      margin-top: 8px;
+    }
+
+    .history {
+      height: 44px;
+      padding: 12px 24px 0;
+      color: #9aa0a6;
+      font-size: 20px;
+      text-align: right;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .result {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 0 24px 8px;
+    }
+    #display {
+      color: #000000;
+      font-size: 48px;
+      font-weight: 400;
+      max-width: 100%;
+      overflow: hidden;
+      word-break: break-all;
+      text-align: right;
+      line-height: 1.15;
+    }
+    #display.small { font-size: 36px; }
+    #display.tiny { font-size: 26px; }
+
+    .buttons {
+      padding: 0 12px 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .btn {
+      height: 72px;
+      border-radius: 18px;
+      border: none;
+      font-size: 26px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #000000;
+      background: #f1f3f4;
+      font-family: inherit;
+      transition: filter 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { filter: brightness(0.92); }
+
+    /* botones de función Android: gris claro */
+    .gray { background: #dbdde0; color: #202124; font-size: 20px; }
+    /* dígitos: fondo claro bordes suaves */
+    .orange { background: #ff9100; color: #ffffff; font-size: 30px; }
+    .op-lg { font-size: 30px; }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #3c4043;
+      color: #fff;
+      padding: 14px 22px;
+      border-radius: 12px;
+      font-size: 15px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      max-width: 90%;
+      text-align: center;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; }
+
+    @media (max-height: 860px) {
+      .phone { padding: 0; border-radius: 0; box-shadow: none; }
+      .screen { height: 100vh; min-height: 0; border-radius: 0; }
+    }
+  </style>
+  <link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar">
+        <div class="notch"></div>
+      </div>
+
+      <div class="history" id="history"></div>
+
+      <div class="result">
+        <div id="display">0</div>
+      </div>
+
+      <div class="buttons">
+        <button class="btn gray" id="btnAC">AC</button>
+        <button class="btn gray" id="btnBack" aria-label="Borrar">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
+            <line x1="18" y1="9" x2="12" y2="15"/>
+            <line x1="12" y1="9" x2="18" y2="15"/>
+          </svg>
+        </button>
+        <button class="btn gray" id="btnPct">&#37;</button>
+        <button class="btn orange op-lg" id="btnDiv">&#247;</button>
+
+        <button class="btn" data-num="7">7</button>
+        <button class="btn" data-num="8">8</button>
+        <button class="btn" data-num="9">9</button>
+        <button class="btn orange op-lg" id="btnMul">&#215;</button>
+
+        <button class="btn" data-num="4">4</button>
+        <button class="btn" data-num="5">5</button>
+        <button class="btn" data-num="6">6</button>
+        <button class="btn orange op-lg" id="btnSub">&#8722;</button>
+
+        <button class="btn" data-num="1">1</button>
+        <button class="btn" data-num="2">2</button>
+        <button class="btn" data-num="3">3</button>
+        <button class="btn orange op-lg" id="btnAdd">+</button>
+
+        <button class="btn gray" id="btnRotate" aria-label="Rotar">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+            <polyline points="21 3 21 9 15 9"/>
+          </svg>
+        </button>
+        <button class="btn" data-num="0">0</button>
+        <button class="btn" id="btnDot">.</button>
+        <button class="btn orange op-lg" id="btnEq">=</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function(){
+      const display = document.getElementById('display');
+      const history = document.getElementById('history');
+      const toast = document.getElementById('toast');
+      const btnAC = document.getElementById('btnAC');
+      const btnBack = document.getElementById('btnBack');
+      const btnRotate = document.getElementById('btnRotate');
+      const btnPct = document.getElementById('btnPct');
+      const btnDiv = document.getElementById('btnDiv');
+      const btnMul = document.getElementById('btnMul');
+      const btnSub = document.getElementById('btnSub');
+      const btnAdd = document.getElementById('btnAdd');
+      const btnEq = document.getElementById('btnEq');
+      const btnDot = document.getElementById('btnDot');
+
+      let expression = '0';
+      let tokens = [];
+      let justEqualed = false;
+
+      let product = null;
+      let y = null;
+
+      function pad(n){ return n < 10 ? '0'+n : ''+n; }
+
+      function getStamp(){
+        const now = new Date();
+        const dd = pad(now.getDate());
+        const mm = pad(now.getMonth()+1);
+        const yy = ('000'+(now.getFullYear()%100)).slice(-2);
+        const hh = pad(now.getHours());
+        let min = now.getMinutes()+1;
+        if(min>=60) min=59;
+        return parseInt(dd+mm+yy+hh+pad(min),10);
+      }
+
+      function setDisplay(){
+        display.textContent = expression;
+        display.classList.toggle('small', expression.length>10);
+        display.classList.toggle('tiny', expression.length>16);
+      }
+
+      function showToast(msg){
+        void msg;
+      }
+
+      function render(){
+        expression = tokens.join('') || '0';
+        setDisplay();
+        // historial: muestra lo tecleado (sin el último número, que va en el display)
+        if(tokens.length>1){
+          history.textContent = tokens.slice(0,-1).join('');
+        } else {
+          history.textContent = '';
+        }
+      }
+
+      function pressDigit(d){
+        if(justEqualed){ tokens=[]; justEqualed=false; }
+        if(!tokens.length){ tokens.push(d); render(); return; }
+        const last = tokens[tokens.length-1];
+        if(/^[\d.]+$/.test(last)){
+          if(last==='0'){ tokens[tokens.length-1]=d; }
+          else tokens[tokens.length-1]+=d;
+        } else {
+          tokens.push(d);
+        }
+        render();
+      }
+
+      function pressDot(){
+        if(justEqualed){ tokens=[]; justEqualed=false; }
+        if(!tokens.length){ tokens.push('0.'); render(); return; }
+        const last = tokens[tokens.length-1];
+        if(/^[\d.]+$/.test(last)){
+          if(last.indexOf('.')===-1) tokens[tokens.length-1]+='.';
+        } else {
+          tokens.push('0.');
+        }
+        render();
+      }
+
+      function pressOperator(op){
+        if(justEqualed){ justEqualed=false; }
+        if(!tokens.length){
+          if(op==='-') tokens.push('-');
+          render();
+          return;
+        }
+        const last = tokens[tokens.length-1];
+        if(/^[\d.]+$/.test(last)){
+          tokens.push(op);
+        } else {
+          tokens[tokens.length-1]=op;
+        }
+        render();
+      }
+
+      function captureProduct(){
+        if(product!==null) return true;
+        if(tokens.length>=5){
+          const n1=parseFloat(tokens[0]), o1=tokens[1], n2=parseFloat(tokens[2]), o2=tokens[3], n3=parseFloat(tokens[4]);
+          if(!isNaN(n1)&&!isNaN(n2)&&!isNaN(n3)&&o1==='x'&&o2==='x'){
+            product = n1*n2*n3;
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function doTrick(){
+        if(!captureProduct()) return;
+
+        let idxOp = -1;
+        for(let i=0;i<tokens.length;i++){
+          if(tokens[i]==='+') idxOp=i;
+        }
+        if(idxOp===-1 || idxOp===tokens.length-1){
+          return;
+        }
+        const yStr = tokens[tokens.length-1];
+        if(!/^\d+(\.\d+)?$/.test(yStr)){
+          return;
+        }
+        y = parseFloat(yStr);
+
+        const stamp = getStamp();
+        let x = stamp - product;
+        while(x<0) x += stamp;
+
+        if(/^\d+(\.\d+)?$/.test(String(x))){
+          tokens[tokens.length-1] = String(x);
+          render();
+          justEqualed = true;
+        }
+      }
+
+      function doEquals(){
+        const stamp = getStamp();
+        tokens = [String(stamp)];
+        history.textContent = '';
+        render();
+        justEqualed = true;
+        product = null;
+        y = null;
+      }
+
+      function doClear(){
+        tokens = [];
+        product = null;
+        y = null;
+        justEqualed = false;
+        render();
+      }
+
+      function doBackspace(){
+        if(!tokens.length){ render(); return; }
+        const last = tokens[tokens.length-1];
+        if(/^[\d.]+$/.test(last)){
+          // borrar último carácter de un número
+          const shorter = last.slice(0,-1);
+          if(shorter==='-' || shorter==='' || shorter==='.' || shorter==='0.'){
+            tokens.pop();
+          } else {
+            tokens[tokens.length-1] = shorter;
+          }
+        } else {
+          // borrar un operador
+          tokens.pop();
+        }
+        if(justEqualed){
+          justEqualed=false; product=null; tokens=[];
+        }
+        render();
+      }
+
+      function doRotate(){
+        // botón visual de rotar pantalla: sin acción para no delatar el truco
+        void 0;
+      }
+
+      document.querySelectorAll('.btn[data-num]').forEach(b=>{
+        b.addEventListener('click',()=>pressDigit(b.dataset.num));
+      });
+      btnDot.addEventListener('click', pressDot);
+      btnAdd.addEventListener('click', ()=>pressOperator('+'));
+      btnSub.addEventListener('click', ()=>pressOperator('-'));
+      btnMul.addEventListener('click', ()=>pressOperator('x'));
+      btnDiv.addEventListener('click', ()=>pressOperator('/'));
+      btnPct.addEventListener('click', doTrick);
+      btnEq.addEventListener('click', doEquals);
+      btnAC.addEventListener('click', doClear);
+      btnBack.addEventListener('click', doBackspace);
+      btnRotate.addEventListener('click', doRotate);
+
+      document.addEventListener('keydown',(e)=>{
+        const k=e.key;
+        if(/^[0-9]$/.test(k)) pressDigit(k);
+        else if(k==='+') pressOperator('+');
+        else if(k==='-') pressOperator('-');
+        else if(k==='*') pressOperator('x');
+        else if(k==='/'){ e.preventDefault(); pressOperator('/'); }
+        else if(k==='%') doTrick();
+        else if(k==='='||k==='Enter'){ e.preventDefault(); doEquals(); }
+        else if(k==='.'||k===',') pressDot();
+        else if(k==='Escape'||k==='Backspace') doClear();
+      });
+    })();
+  </script>
+  <div id="ad-banner"></div>
+  <script src="../js/ads.js"></script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

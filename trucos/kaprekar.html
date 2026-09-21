@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Constante de Kaprekar</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #1c1c1e;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+
+    .phone {
+      width: 375px;
+      background: #000;
+      border-radius: 50px;
+      padding: 18px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.8), inset 0 0 0 2px #2c2c2e;
+    }
+
+
+    .screen {
+      display: flex;
+      flex-direction: column;
+      height: 780px;
+      border-radius: 38px;
+      overflow: hidden;
+      background: #000;
+    }
+
+
+    .status-bar {
+      height: 44px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .iso { position: absolute; left: 16px; top: 30px; font-size: 12px; }
+    .battery { position: absolute; right: 10px; top: 28px; font-size: 12px; }
+    .notch { width: 120px; height: 32px; background: #000; border-radius: 20px; margin-top: 6px; }
+
+
+    .result {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-end;
+      padding: 0 26px 10px;
+    }
+    #display {
+      color: #fff;
+      font-size: 46px;
+      font-weight: 300;
+      max-width: 100%;
+      overflow: hidden;
+      word-break: break-all;
+      text-align: right;
+      line-height: 1.15;
+    }
+    #display.small { font-size: 34px; }
+    #display.tiny { font-size: 24px; }
+
+
+    .buttons {
+      padding: 0 10px 14px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+
+    .btn {
+      height: 78px;
+      border-radius: 50px;
+      border: none;
+      font-size: 30px;
+      font-weight: 400;
+      cursor: pointer;
+      color: #fff;
+      background: #333;
+      font-family: inherit;
+      transition: filter 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { filter: brightness(1.7); }
+
+
+    .gray { background: #a5a5a5; color: #000; }
+    .orange { background: #ff9f0a; color: #fff; }
+    .zero { grid-column: span 2; justify-content: flex-start; padding-left: 30px; }
+    .op-lg { font-size: 40px; }
+
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2c2c2e;
+      color: #fff;
+      padding: 14px 22px;
+      border-radius: 14px;
+      font-size: 15px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      max-width: 90%;
+      text-align: center;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+  <link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+  <div class="phone">
+    <div class="screen">
+      <div class="status-bar">
+        <span class="iso"></span>
+        <div class="notch"></div>
+        <span class="battery"></span>
+      </div>
+
+
+      <div class="result">
+        <div id="display">0</div>
+      </div>
+
+
+      <div class="buttons">
+        <button class="btn gray" id="btnAC">AC</button>
+        <button class="btn gray" id="btnSign">+&#8722;</button>
+        <button class="btn gray" id="btnPct">&#37;</button>
+        <button class="btn orange op-lg" id="btnDiv">&#247;</button>
+
+
+        <button class="btn" data-num="7">7</button>
+        <button class="btn" data-num="8">8</button>
+        <button class="btn" data-num="9">9</button>
+        <button class="btn orange op-lg" id="btnMul">&#215;</button>
+
+
+        <button class="btn" data-num="4">4</button>
+        <button class="btn" data-num="5">5</button>
+        <button class="btn" data-num="6">6</button>
+        <button class="btn orange op-lg" id="btnSub">&#8722;</button>
+
+
+        <button class="btn" data-num="1">1</button>
+        <button class="btn" data-num="2">2</button>
+        <button class="btn" data-num="3">3</button>
+        <button class="btn orange op-lg" id="btnAdd">+</button>
+
+
+        <button class="btn zero" data-num="0">0</button>
+        <button class="btn" id="btnDot">.</button>
+        <button class="btn orange op-lg" id="btnEq">=</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="toast" id="toast"></div>
+
+
+  <script>
+    (function(){
+      const display = document.getElementById('display');
+      const toast = document.getElementById('toast');
+      const btnAC = document.getElementById('btnAC');
+      const btnSign = document.getElementById('btnSign');
+      const btnPct = document.getElementById('btnPct');
+      const btnDiv = document.getElementById('btnDiv');
+      const btnMul = document.getElementById('btnMul');
+      const btnSub = document.getElementById('btnSub');
+      const btnAdd = document.getElementById('btnAdd');
+      const btnEq = document.getElementById('btnEq');
+      const btnDot = document.getElementById('btnDot');
+
+
+      let tokens = [];
+      let justEqualed = false;
+      let expression = '0';
+
+
+      function setDisplay(){
+        expression = tokens.join('') || '0';
+        display.textContent = expression;
+        display.classList.toggle('small', expression.length>10);
+        display.classList.toggle('tiny', expression.length>16);
+      }
+
+
+      function showToast(msg){
+        void msg;
+      }
+
+
+      function lastIsNumber(){
+        if(!tokens.length) return false;
+        return /^[-\d.]+$/.test(tokens[tokens.length-1]);
+      }
+
+
+      function pressDigit(d){
+        if(justEqualed){ tokens=[]; justEqualed=false; }
+        if(!tokens.length){ tokens.push(d); setDisplay(); return; }
+        if(tokens.length===1 && tokens[0]==='-'){ tokens[0]='-'+d; setDisplay(); return; }
+        const last = tokens[tokens.length-1];
+        if(/^\d+(\.\d+)?$/.test(last) || last==='-0'){
+          if(last==='0'){ tokens[tokens.length-1]=d; }
+          else tokens[tokens.length-1]+=d;
+        } else {
+          tokens.push(d);
+        }
+        setDisplay();
+      }
+
+
+      function pressDot(){
+        if(justEqualed){ tokens=[]; justEqualed=false; }
+        if(!tokens.length){ tokens.push('0.'); setDisplay(); return; }
+        if(tokens.length===1 && tokens[0]==='-'){ tokens[0]='-0.'; setDisplay(); return; }
+        const last = tokens[tokens.length-1];
+        if(/^[-\d.]+\d*$/.test(last)){
+          if(last.indexOf('.')===-1) tokens[tokens.length-1]+='.';
+        } else {
+          tokens.push('0.');
+        }
+        setDisplay();
+      }
+
+
+      function pressOperator(op){
+        if(justEqualed){ justEqualed=false; }
+        if(!tokens.length){
+          if(op==='-') tokens.push('-');
+          setDisplay();
+          return;
+        }
+        const last = tokens[tokens.length-1];
+        if(last==='-'){ tokens.pop(); tokens.push('-'); setDisplay(); return; }
+        if(/^[-\d.]+$/.test(last)){
+          tokens.push(op);
+        } else {
+          tokens[tokens.length-1]=op;
+        }
+        setDisplay();
+      }
+
+
+      function doClear(){
+        tokens = [];
+        justEqualed = false;
+        setDisplay();
+      }
+
+
+      function doSign(){
+        if(!tokens.length) return;
+        const last = tokens[tokens.length-1];
+        if(/^[-\d.]+$/.test(last)){
+          if(last.charAt(0)==='-') tokens[tokens.length-1]=last.slice(1);
+          else tokens[tokens.length-1]='-'+last;
+        }
+        setDisplay();
+      }
+
+
+      function applyOp(a,b,op){
+        if(op==='+') return a+b;
+        if(op==='-') return a-b;
+        if(op==='x') return a*b;
+        if(op==='/') return b===0 ? NaN : a/b;
+        return b;
+      }
+
+
+      function evaluate(){
+        if(!tokens.length) return 0;
+        const out=[], ops=[], prec={'+':1,'-':1,'x':2,'/':2};
+        for(let i=0;i<tokens.length;i++){
+          const t=tokens[i];
+          if(/^[-\d.]+$/.test(t)){ out.push(parseFloat(t)); }
+          else if(prec[t]){
+            while(ops.length && prec[ops[ops.length-1]]>=prec[t]){
+              const op=ops.pop(), b=out.pop(), a=out.pop();
+              out.push(applyOp(a,b,op));
+            }
+            ops.push(t);
+          }
+        }
+        while(ops.length){
+          const op=ops.pop(), b=out.pop(), a=out.pop();
+          out.push(applyOp(a,b,op));
+        }
+        return out[0];
+      }
+
+
+      function doEquals(){
+        const r = evaluate();
+        tokens = [formatNum(r)];
+        justEqualed = true;
+        setDisplay();
+      }
+
+
+      function formatNum(n){
+        if(!isFinite(n)) return 'Error';
+        return String(parseFloat(n.toPrecision(12)));
+      }
+
+
+      // ---- BOTÓN % : constante de Kaprekar (6174) ----
+      function doKaprekar(){
+        let num = evaluate();
+        num = Math.round(num);
+        if(num < 0) num = Math.abs(num);
+        let s = String(num);
+        if(num < 1000){
+          s = ('000' + num).slice(-4);
+        }
+        if(!/^\d{4}$/.test(s)){
+          tokens = ['Error'];
+          setDisplay();
+          return;
+        }
+        if(/(\d).*\1/.test(s)){
+          tokens = ['Error'];
+          setDisplay();
+          return;
+        }
+
+        let cur = parseInt(s);
+        let iterations = 0;
+        let guard = 0;
+        while(cur !== 6174 && guard < 100){
+          const digits = cur.toString().padStart(4,'0').split('').map(Number);
+          const asc = parseInt(digits.slice().sort((a,b)=>a-b).join(''));
+          const desc = parseInt(digits.slice().sort((a,b)=>b-a).join(''));
+          cur = desc - asc;
+          iterations++;
+          guard++;
+        }
+        tokens = [String(iterations)];
+        justEqualed = true;
+        setDisplay();
+      }
+
+
+      document.querySelectorAll('.btn[data-num]').forEach(b=>{
+        b.addEventListener('click',()=>pressDigit(b.dataset.num));
+      });
+      btnDot.addEventListener('click', pressDot);
+      btnAdd.addEventListener('click', ()=>pressOperator('+'));
+      btnSub.addEventListener('click', ()=>pressOperator('-'));
+      btnMul.addEventListener('click', ()=>pressOperator('x'));
+      btnDiv.addEventListener('click', ()=>pressOperator('/'));
+      btnPct.addEventListener('click', doKaprekar);
+      btnEq.addEventListener('click', doEquals);
+      btnAC.addEventListener('click', doClear);
+      btnSign.addEventListener('click', doSign);
+
+
+      document.addEventListener('keydown',(e)=>{
+        const k=e.key;
+        if(/^[0-9]$/.test(k)) pressDigit(k);
+        else if(k==='+') pressOperator('+');
+        else if(k==='-') pressOperator('-');
+        else if(k==='*') pressOperator('x');
+        else if(k==='/'){ e.preventDefault(); pressOperator('/'); }
+        else if(k==='%') doKaprekar();
+        else if(k==='='||k==='Enter'){ e.preventDefault(); doEquals(); }
+        else if(k==='.'||k===',') pressDot();
+        else if(k==='Escape'||k==='Backspace') doClear();
+      });
+
+
+      const iso=document.querySelector('.iso'), battery=document.querySelector('.battery');
+      function clock(){
+        const n=new Date();
+        iso.textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+      }
+      clock();
+      setInterval(clock,1000);
+      battery.textContent='73%  \u25B3';
+    })();
+  </script>
+  <div id="ad-banner"></div>
+  <script src="../js/ads.js"></script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

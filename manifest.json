@@ -1,0 +1,17 @@
+{
+  "name": "Matemágica · Trucos de magia matemática",
+  "short_name": "Matemágica",
+  "description": "Trucos de magia matemática: tarjetas binarias, constante de Kaprekar y calculadora mágica.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f1ea",
+  "theme_color": "#7a1f2b",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

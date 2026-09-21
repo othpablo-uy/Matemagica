@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tarjetas binarias</title>
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    --bg: #f4f1ea; --card: #ffffff; --ink: #1d1b16; --muted: #6f6a5c;
+    --line: #1d1b16; --accent: #7a1f2b; --accent-ink: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14120f; --card: #201d18; --ink: #f1ece0; --muted: #9a937f;
+      --line: #f1ece0; --accent: #c8485a; --accent-ink: #14120f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14120f; --card: #201d18; --ink: #f1ece0; --muted: #9a937f;
+    --line: #f1ece0; --accent: #c8485a; --accent-ink: #14120f;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    display: flex; flex-direction: column; align-items: center;
+    user-select: none; -webkit-user-select: none;
+  }
+  main {
+    width: 100%; max-width: 520px; flex: 1;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 16px; gap: 18px;
+  }
+  /* Zona secreta: el título de la tarjeta */
+  .title {
+    text-align: center; font-size: clamp(22px, 6vw, 30px);
+    letter-spacing: .08em; padding: 12px 0; cursor: default;
+  }
+  .grid {
+    background: var(--card); border: 2px solid var(--line);
+    box-shadow: 6px 6px 0 var(--line);
+    padding: 18px 10px; display: grid;
+    grid-template-columns: repeat(6, 1fr); gap: 14px 0;
+    text-align: center; font-size: clamp(20px, 6.2vw, 30px);
+    font-variant-numeric: tabular-nums;
+  }
+  button {
+    font: inherit; font-size: 22px; padding: 16px; border-radius: 10px;
+    border: 2px solid var(--accent); background: var(--accent);
+    color: var(--accent-ink); cursor: pointer;
+  }
+  button.ghost { background: transparent; color: var(--accent); }
+  .result { text-align: center; }
+  .result p { color: var(--muted); font-size: 20px; margin: 0 0 6px; }
+  .result .num { font-size: clamp(110px, 38vw, 200px); line-height: 1; color: var(--accent); }
+  .hidden { display: none !important; }
+</style>
+<link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+<main>
+  <section id="cardView">
+    <div class="title" id="title">TARJETA 0</div>
+    <div class="grid" id="grid"></div>
+    <div style="height:18px"></div>
+    <button id="next" style="width:100%">Siguiente</button>
+  </section>
+
+  <section id="resultView" class="result hidden">
+    <p>El número que pensaste es…</p>
+    <div class="num" id="answer">0</div>
+    <div style="height:24px"></div>
+    <button class="ghost" id="reset" style="width:100%">Volver a empezar</button>
+  </section>
+</main>
+
+<script>
+  const TOTAL = 6;          // tarjetas 0..5
+  const MAX = 60;           // números del 1 al 60
+  let current = 0;
+  let sum = 0;              // suma de los primeros números (1, 2, 4, 8, 16, 32)
+
+  const titleEl = document.getElementById('title');
+  const gridEl = document.getElementById('grid');
+  const cardView = document.getElementById('cardView');
+  const resultView = document.getElementById('resultView');
+  const answerEl = document.getElementById('answer');
+
+  // Tarjeta k = números del 1 al 60 que tienen el bit k encendido.
+  // El primer número de cada tarjeta es 2^k.
+  function numbersFor(k) {
+    const out = [];
+    for (let n = 1; n <= MAX; n++) if (n & (1 << k)) out.push(n);
+    return out;
+  }
+
+  function render() {
+    titleEl.textContent = 'TARJETA ' + current;
+    gridEl.innerHTML = numbersFor(current).map(n => '<div>' + n + '</div>').join('');
+  }
+
+  // --- Click secreto: tocar el título "TARJETA n" ---
+  // El número está en esta tarjeta → se suma su primer número (2^k).
+  // Tocar otra vez lo desmarca (por si te equivocás).
+  // El teléfono vibra: 1 pulso = marcada, 2 pulsos = desmarcada.
+  let marked = false;
+  titleEl.addEventListener('click', () => {
+    marked = !marked;
+    if (navigator.vibrate) { try { navigator.vibrate(marked ? 40 : [30, 60, 30]); } catch (e) {} }
+  });
+
+  document.getElementById('next').addEventListener('click', () => {
+    if (marked) sum += 1 << current;
+    marked = false;
+    current++;
+    if (current >= TOTAL) {
+      cardView.classList.add('hidden');
+      resultView.classList.remove('hidden');
+      answerEl.textContent = sum;
+    } else {
+      render();
+    }
+  });
+
+  document.getElementById('reset').addEventListener('click', () => {
+    current = 0; sum = 0; marked = false;
+    resultView.classList.add('hidden');
+    cardView.classList.remove('hidden');
+    render();
+  });
+
+  render();
+</script>
+<div id="ad-banner"></div>
+<script src="../js/ads.js"></script>
+<script src="../js/app.js"></script>
+</body>
+</html>
