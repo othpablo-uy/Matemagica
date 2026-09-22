@@ -1,7 +1,7 @@
 {
   "name": "Matemágica · Trucos de magia matemática",
   "short_name": "Matemágica",
-  "description": "Trucos de magia matemática: tarjetas binarias, constante de Kaprekar y calculadora mágica.",
+  "description": "Trucos de magia matemática: tarjetas binarias, constante de Kaprekar, calculadora mágica y cuadrado mágico de la edad.",
   "lang": "es",
   "start_url": "./",
   "scope": "./",

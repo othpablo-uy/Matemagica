@@ -1,4 +1,4 @@
-const CACHE = 'matemagica-v1';
+const CACHE = 'matemagica-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -6,9 +6,11 @@ const ASSETS = [
   './css/estilos.css',
   './js/app.js',
   './js/ads.js',
+  './js/presenter.js',
   './trucos/binario.html',
   './trucos/kaprekar.html',
   './trucos/calculadora.html',
+  './trucos/cuadrado-magico.html',
   './icons/icon-192.png',
   './icons/icon-512.png'
 ];

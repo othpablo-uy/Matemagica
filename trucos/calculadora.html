@@ -406,8 +406,25 @@
       });
     })();
   </script>
+  <script type="application/json" id="presenter-script">
+  {
+    "title": "Calculadora mágica",
+    "say": [
+      "Voy a predecir un número antes de que calcules.",
+      "Anotá tres números (por ejemplo, día, mes y año) y multiplicálos. Luego sumale un número que elijas.",
+      "Ahora apretá = … y mirá el resultado."
+    ],
+    "how": [
+      "La persona ingresa: número × número × número + número.",
+      "Tocá el botón % para que la app ajuste la operación en secreto.",
+      "Tocá = y el display muestra la fecha y hora actuales como número.",
+      "Tu predicción es ese número: tenelo escrito de antemano. Secreto: al tocar %, la app reemplaza la suma para que el total sea la marca de tiempo actual."
+    ]
+  }
+  </script>
   <div id="ad-banner"></div>
   <script src="../js/ads.js"></script>
+  <script src="../js/presenter.js"></script>
   <script src="../js/app.js"></script>
 </body>
 </html>

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cuadrado mágico de la edad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #0d0a17;
+    --panel: #171025;
+    --panel-2: #1f1733;
+    --gold: #c9a53b;
+    --gold-bright: #e9c968;
+    --violet: #8a6cf2;
+    --ivory: #efe8dc;
+    --ivory-dim: #b9b0c9;
+    --line: rgba(201,165,59,0.25);
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html{ scroll-padding-top: env(safe-area-inset-top, 0px); height:100%; }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    min-height:100%;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(138,108,242,0.16), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 90% 100%, rgba(201,165,59,0.10), transparent 60%),
+      var(--ink);
+    color: var(--ivory);
+    font-family: 'Manrope', sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 32px 18px;
+  }
+  .stage{
+    width:100%;
+    max-width: 560px;
+    position:relative;
+    flex: 1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+  }
+  .frame{
+    width:100%;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: linear-gradient(180deg, var(--panel), var(--panel-2));
+    padding: 40px 32px 34px;
+    box-shadow: 0 40px 80px -30px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.03);
+    position: relative;
+    overflow:hidden;
+  }
+  .frame::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:
+      linear-gradient(115deg, transparent 40%, rgba(201,165,59,0.06) 50%, transparent 60%);
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-size: 12.5px;
+    letter-spacing: 0.04em;
+    color: var(--gold);
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+  h1{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 38px;
+    line-height: 1.08;
+    margin: 0 0 10px;
+    color: var(--ivory);
+  }
+  h1 em{
+    font-style: italic;
+    color: var(--gold-bright);
+  }
+  p.lead{
+    color: var(--ivory-dim);
+    font-size: 15px;
+    line-height: 1.55;
+    margin: 0 0 28px;
+    max-width: 42ch;
+  }
+
+  /* ---- Setup screen ---- */
+  label{
+    display:block;
+    font-size: 13px;
+    color: var(--ivory-dim);
+    margin-bottom: 8px;
+  }
+  input[type="text"].date-input{
+    width:100%;
+    background: rgba(0,0,0,0.28);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 13px 14px;
+    color: var(--ivory);
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    outline: none;
+    margin-bottom: 22px;
+  }
+  input[type="text"].date-input::placeholder{
+    color: var(--ivory-dim);
+    opacity: 0.6;
+  }
+  input[type="text"].date-input:focus{
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,165,59,0.15);
+  }
+  .error{
+    color: #e8998f;
+    font-size: 13px;
+    margin: -14px 0 18px;
+    min-height: 16px;
+  }
+  button.primary{
+    width:100%;
+    background: linear-gradient(180deg, var(--gold-bright), var(--gold));
+    color: #221806;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 18px;
+    font-size: 15.5px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor:pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+    font-family: 'Manrope', sans-serif;
+  }
+  button.primary:hover{ transform: translateY(-1px); box-shadow: 0 10px 24px -10px rgba(201,165,59,0.55); }
+  button.primary:active{ transform: translateY(0); }
+  button.primary:focus-visible, .cell:focus-visible, button.ghost:focus-visible{
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+  }
+  .hint-row{
+    display:flex;
+    align-items:flex-start;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ivory-dim);
+    line-height: 1.5;
+  }
+  .hint-row svg{ flex:none; margin-top:2px; }
+
+  /* ---- Square screen ---- */
+  .progress{
+    display:flex;
+    gap: 6px;
+    margin-bottom: 22px;
+  }
+  .progress span{
+    height:3px;
+    flex:1;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow:hidden;
+  }
+  .progress span i{
+    display:block;
+    height:100%;
+    width:0%;
+    background: var(--gold);
+    transition: width .4s ease;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .cell{
+    aspect-ratio: 1 / 1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: var(--ivory);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(20px, 5.4vw, 27px);
+    font-weight: 600;
+    cursor:pointer;
+    transition: background .2s ease, border-color .2s ease, opacity .25s ease, transform .15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cell:hover:not(.disabled):not(.chosen){
+    border-color: var(--gold);
+    background: rgba(201,165,59,0.08);
+  }
+  .cell.disabled{
+    opacity: 0.22;
+    cursor: default;
+    pointer-events: none;
+  }
+  .cell.chosen{
+    background: linear-gradient(160deg, var(--gold-bright), var(--gold));
+    color: #221806;
+    border-color: transparent;
+    transform: scale(1.03);
+    pointer-events: none;
+  }
+  .square-caption{
+    text-align:center;
+    color: var(--ivory-dim);
+    font-size: 13.5px;
+    margin: 18px 0 6px;
+    min-height: 18px;
+  }
+  .actions-row{
+    display:flex;
+    justify-content:center;
+    margin-top: 14px;
+  }
+  button.ghost{
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ivory-dim);
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13px;
+    cursor:pointer;
+    font-family: 'Manrope', sans-serif;
+  }
+  button.ghost:hover{ border-color: var(--gold); color: var(--ivory); }
+
+  /* ---- Reveal screen ---- */
+  .reveal{
+    text-align:center;
+  }
+  .reveal .eyebrow{ text-align:center; }
+  .big-number{
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 108px;
+    line-height: 1;
+    font-weight: 700;
+    background: linear-gradient(160deg, var(--gold-bright), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 6px 0 2px;
+    opacity: 0;
+    transform: scale(0.85);
+    animation: pop .7s cubic-bezier(.2,1.4,.4,1) forwards .15s;
+  }
+  @keyframes pop{
+    to{ opacity:1; transform: scale(1); }
+  }
+  .sum-line{
+    color: var(--ivory-dim);
+    font-size: 14px;
+    margin-bottom: 26px;
+  }
+  .sum-line b{ color: var(--ivory); font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce){
+    .big-number{ animation: none; opacity:1; transform:none; }
+    .cell{ transition:none; }
+  }
+
+  .screen{ display:none; }
+  .screen.active{ display:block; }
+</style>
+<link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+<div class="stage">
+  <div class="frame">
+
+    <!-- SETUP -->
+    <section class="screen active" id="screen-setup">
+      <p class="eyebrow">Para el mago</p>
+      <h1>El cuadrado mágico<br><em>de la edad</em></h1>
+      <p class="lead">Ingresá la fecha de nacimiento del espectador. Nadie más ve este dato: la app arma un cuadrado que, elija lo que elija, siempre va a revelar su edad.</p>
+
+      <label for="birthdate">Fecha de nacimiento (dd/mm/aaaa)</label>
+      <input type="text" class="date-input" id="birthdate" placeholder="dd/mm/aaaa" inputmode="numeric" maxlength="10" autocomplete="off">
+      <p class="error" id="setup-error"></p>
+
+      <button class="primary" id="btn-generate">Generar el cuadrado</button>
+
+      <div class="hint-row">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v.01M12 11v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span>Funciona a partir de 34 años. Después, pasale el teléfono al espectador y que elija cuatro números, uno por vez.</span>
+      </div>
+    </section>
+
+    <!-- SQUARE -->
+    <section class="screen" id="screen-square">
+      <p class="eyebrow">Para el espectador</p>
+      <h1>Elegí <em>cuatro</em> números</h1>
+      <p class="lead">Uno a la vez. Al tocar un número, se descartan los demás de su fila y de su columna. Al final, la suma de tus cuatro elegidos va a ser un número muy especial.</p>
+
+      <div class="progress" id="progress">
+        <span><i></i></span><span><i></i></span><span><i></i></span><span><i></i></span>
+      </div>
+
+      <div class="grid" id="grid"></div>
+      <p class="square-caption" id="square-caption">Tocá cualquier número para empezar.</p>
+
+      <div class="actions-row">
+        <button class="ghost" id="btn-restart-square">Empezar de nuevo</button>
+      </div>
+    </section>
+
+    <!-- REVEAL -->
+    <section class="screen reveal" id="screen-reveal">
+      <p class="eyebrow">El resultado</p>
+      <div class="big-number" id="reveal-number">0</div>
+      <p class="sum-line">Sumá tus cuatro números elegidos: <b id="reveal-formula"></b></p>
+      <button class="primary" id="btn-play-again">Hacer otro truco</button>
+    </section>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var screens = {
+    setup: document.getElementById('screen-setup'),
+    square: document.getElementById('screen-square'),
+    reveal: document.getElementById('screen-reveal')
+  };
+
+  function show(name){
+    Object.keys(screens).forEach(function(k){
+      screens[k].classList.toggle('active', k === name);
+    });
+  }
+
+  // Convierte "dd/mm/yyyy" en un objeto Date, o null si no es una fecha real/válida.
+  function parseDDMMYYYY(text){
+    var match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text.trim());
+    if (!match) return null;
+    var day = parseInt(match[1], 10);
+    var month = parseInt(match[2], 10);
+    var year = parseInt(match[3], 10);
+    if (month < 1 || month > 12) return null;
+    var date = new Date(year, month - 1, day);
+    // Chequea que la fecha no haya "desbordado" (ej: 31/02 -> 03/03)
+    if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day){
+      return null;
+    }
+    if (date > new Date()) return null;
+    return date;
+  }
+
+  function calcAge(birthDate){
+    var today = new Date();
+    var age = today.getFullYear() - birthDate.getFullYear();
+    var m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())){
+      age--;
+    }
+    return age;
+  }
+
+  // Genera la matriz 4x4. Cada fila son 4 números consecutivos: M[i][j] = rowBase[i] + j.
+  // El "excedente" por encima de 34 (edad mínima) se reparte lo más parejo posible
+  // entre las 4 filas (en vez de acumularse todo en la última), así el salto entre
+  // filas se mantiene chico y parejo sin importar cuán grande sea la edad.
+  // Cualquier selección de un número por fila y por columna sigue sumando `age`.
+  function buildSquare(age){
+    var extra = age - 34;           // >= 0 porque age >= 34
+    var q = Math.floor(extra / 4);  // parte que se suma por igual a las 4 filas
+    var rem = extra % 4;            // resto: se suma +1 extra a las últimas `rem` filas
+    var baseRow = [1, 5, 9, 13];
+    var rowBase = baseRow.map(function(b, i){
+      return b + q + (i >= 4 - rem ? 1 : 0);
+    });
+    var colOffset = [0, 1, 2, 3];
+
+    var matrix = [];
+    for (var i = 0; i < 4; i++){
+      var row = [];
+      for (var j = 0; j < 4; j++){
+        row.push(rowBase[i] + colOffset[j]);
+      }
+      matrix.push(row);
+    }
+    return matrix;
+  }
+
+  var age = null;
+  var matrix = null;
+  var chosenRows = [];
+  var chosenCols = [];
+  var chosenValues = [];
+
+  var birthdateInput = document.getElementById('birthdate');
+  var setupError = document.getElementById('setup-error');
+  var grid = document.getElementById('grid');
+  var caption = document.getElementById('square-caption');
+  var progressBars = document.querySelectorAll('#progress i');
+
+  // Autoformatea mientras se escribe: va insertando las barras de dd/mm/aaaa
+  birthdateInput.addEventListener('input', function(){
+    var digits = birthdateInput.value.replace(/\D/g, '').slice(0, 8);
+    var formatted = digits;
+    if (digits.length > 4){
+      formatted = digits.slice(0,2) + '/' + digits.slice(2,4) + '/' + digits.slice(4);
+    } else if (digits.length > 2){
+      formatted = digits.slice(0,2) + '/' + digits.slice(2);
+    }
+    birthdateInput.value = formatted;
+  });
+
+  document.getElementById('btn-generate').addEventListener('click', function(){
+    setupError.textContent = '';
+    var val = birthdateInput.value.trim();
+    if (!val){
+      setupError.textContent = 'Ingresá una fecha de nacimiento.';
+      return;
+    }
+    var birthDate = parseDDMMYYYY(val);
+    if (!birthDate){
+      setupError.textContent = 'Ingresá una fecha válida con formato dd/mm/aaaa.';
+      return;
+    }
+    var computedAge = calcAge(birthDate);
+    if (computedAge < 34){
+      setupError.textContent = 'Este truco funciona para edades de 34 años en adelante.';
+      return;
+    }
+    age = computedAge;
+    matrix = buildSquare(age);
+    startSquare();
+  });
+
+  function startSquare(){
+    chosenRows = [];
+    chosenCols = [];
+    chosenValues = [];
+    caption.textContent = 'Tocá cualquier número para empezar.';
+    progressBars.forEach(function(bar){ bar.style.width = '0%'; });
+    renderGrid();
+    show('square');
+  }
+
+  function renderGrid(){
+    grid.innerHTML = '';
+    for (var i = 0; i < 4; i++){
+      for (var j = 0; j < 4; j++){
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cell';
+        btn.textContent = matrix[i][j];
+        btn.setAttribute('data-row', i);
+        btn.setAttribute('data-col', j);
+
+        var rowTaken = chosenRows.indexOf(i) !== -1;
+        var colTaken = chosenCols.indexOf(j) !== -1;
+        var isChosen = rowTaken && colTaken && chosenRows[chosenRows.indexOf(i)] === i && wasChosenCell(i, j);
+
+        if (isChosen){
+          btn.classList.add('chosen');
+        } else if (rowTaken || colTaken){
+          btn.classList.add('disabled');
+        } else {
+          btn.addEventListener('click', onCellClick);
+        }
+        grid.appendChild(btn);
+      }
+    }
+  }
+
+  function wasChosenCell(i, j){
+    for (var k = 0; k < chosenRows.length; k++){
+      if (chosenRows[k] === i && chosenCols[k] === j) return true;
+    }
+    return false;
+  }
+
+  function onCellClick(e){
+    var row = parseInt(e.currentTarget.getAttribute('data-row'), 10);
+    var col = parseInt(e.currentTarget.getAttribute('data-col'), 10);
+    chosenRows.push(row);
+    chosenCols.push(col);
+    chosenValues.push(matrix[row][col]);
+
+    var step = chosenValues.length;
+    progressBars[step - 1].style.width = '100%';
+
+    if (step < 4){
+      caption.textContent = 'Elegido ' + step + ' de 4. Seguí con otro número.';
+      renderGrid();
+    } else {
+      caption.textContent = '¡Listo! Revelando el resultado...';
+      renderGrid();
+      setTimeout(revealResult, 900);
+    }
+  }
+
+  function revealResult(){
+    var sum = chosenValues.reduce(function(a,b){ return a + b; }, 0);
+    document.getElementById('reveal-number').textContent = sum;
+    document.getElementById('reveal-formula').textContent = chosenValues.join(' + ') + ' = ' + sum;
+    show('reveal');
+  }
+
+  document.getElementById('btn-restart-square').addEventListener('click', function(){
+    startSquare();
+  });
+
+  document.getElementById('btn-play-again').addEventListener('click', function(){
+    birthdateInput.value = '';
+    birthdateInput.focus();
+    setupError.textContent = '';
+    age = null;
+    matrix = null;
+    show('setup');
+  });
+
+})();
+</script>
+<script type="application/json" id="presenter-script">
+{
+  "title": "Cuadrado mágico de la edad",
+  "say": [
+    "Voy a hacer que una grilla de números adivine tu edad.",
+    "Sin decirme nada, elegí un número en el tablero. Se descartan su fila y su columna, y volvé a elegir.",
+    "Al final, sumá tus cuatro números elegidos…",
+    "El resultado es tu edad."
+  ],
+  "how": [
+    "Sin que el espectador vea, ingresá su fecha de nacimiento en la pantalla inicial.",
+    "Pasale el teléfono: que elija cuatro números, uno por vez (cada elección borra la fila y la columna).",
+    "La suma siempre da su edad. Secreto: la grilla se arma para que cualquier selección de fila/columna sume la edad."
+  ]
+}
+</script>
+<div id="ad-banner"></div>
+<script src="../js/ads.js"></script>
+<script src="../js/presenter.js"></script>
+<script src="../js/app.js"></script>
+</body>
+</html>

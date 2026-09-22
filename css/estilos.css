@@ -32,6 +32,36 @@ body {
   border-radius: 999px; padding: 3px 12px; font-size: 12px; font-weight: bold; cursor: pointer;
 }
 .appbar-badge.on { background: var(--gold); color: var(--accent); border-color: var(--gold); }
+.appbar-presenter { background: transparent; border: 0; color: var(--accent-ink); font-size: 20px; line-height: 1; cursor: pointer; padding: 2px 6px; }
+
+/* Modo presentador */
+.presenter-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.78);
+  display: flex; align-items: center; justify-content: center; z-index: 1100; padding: 16px;
+}
+.presenter-box {
+  width: min(420px, 94vw); max-height: 86vh; overflow: auto;
+  background: var(--card); color: var(--ink); border: 2px solid var(--line);
+  box-shadow: 6px 6px 0 var(--line); padding: 18px;
+}
+.presenter-head { display: flex; justify-content: space-between; align-items: center; font-weight: bold; color: var(--accent); letter-spacing: .06em; }
+.presenter-close { background: transparent; border: 0; font-size: 18px; cursor: pointer; color: var(--ink); }
+.presenter-box h3 { margin: 10px 0 4px; }
+.presenter-box h4 { margin: 16px 0 6px; color: var(--accent); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+.presenter-box ol { margin: 0; padding-left: 20px; }
+.presenter-box li { margin: 7px 0; font-size: 15px; line-height: 1.4; }
+.presenter-foot { margin-top: 18px; text-align: center; }
+.presenter-off { background: transparent; border: 1.5px solid var(--muted); color: var(--muted); border-radius: 8px; padding: 8px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+
+/* Interruptor */
+.switch { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; }
+.switch input { display: none; }
+.switch .track { width: 46px; height: 26px; border-radius: 999px; background: var(--muted); position: relative; transition: background .2s; flex: none; }
+.switch .knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: left .2s; }
+.switch input:checked + .track { background: var(--accent); }
+.switch input:checked + .track .knob { left: 23px; }
+.switch-label { color: var(--ink); }
+.settings-card { background: var(--card); border: 2px solid var(--line); box-shadow: 4px 4px 0 var(--line); padding: 14px; }
 
 /* Banner de publicidad */
 #ad-banner {

@@ -136,8 +136,25 @@
 
   render();
 </script>
+<script type="application/json" id="presenter-script">
+{
+  "title": "Tarjetas binarias",
+  "say": [
+    "Pensá un número del 1 al 60. No me lo digas.",
+    "Te muestro 6 tarjetas. Decime en cuáles aparece tu número.",
+    "Ya lo tengo… el número que pensaste es el que aparece al final."
+  ],
+  "how": [
+    "Cuando la persona diga que su número aparece en una tarjeta, tocá el título 'TARJETA n' para marcarla (el celular vibra).",
+    "Si se equivoca, tocá otra vez el título para desmarcar.",
+    "Tocá 'Siguiente' para pasar de tarjeta.",
+    "Al terminar la sexta, la app revela el número."
+  ]
+}
+</script>
 <div id="ad-banner"></div>
 <script src="../js/ads.js"></script>
+<script src="../js/presenter.js"></script>
 <script src="../js/app.js"></script>
 </body>
 </html>
